@@ -1,35 +1,110 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.util.Database;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    public UserDaoJDBCImpl() {
 
-    }
+    public UserDaoJDBCImpl() {}
 
+    @Override
     public void createUsersTable() {
+        var conn = Database.getInstance().getConnection();
 
+        try (var stmt = conn.createStatement()) {
+
+            stmt.executeUpdate("create table if not exists users (id int primary key AUTO_INCREMENT," +
+                    " name TEXT, lastName TEXT, age TINYINT)");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
     public void dropUsersTable() {
+        var conn = Database.getInstance().getConnection();
 
+        try (var stmt = conn.createStatement()) {
+
+            stmt.executeUpdate("drop table if exists users");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
     public void saveUser(String name, String lastName, byte age) {
+        var conn = Database.getInstance().getConnection();
 
+        try (var stmt = conn.prepareStatement("insert into users (name, lastName, age) values (?, ?, ?)")) {
+
+            stmt.setString(1, name);
+            stmt.setString(2, lastName);
+            stmt.setByte(3, age);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
     public void removeUserById(long id) {
+        var conn = Database.getInstance().getConnection();
+
+        try (var stmt = conn.prepareStatement("delete from users where id=?")) {
+
+            stmt.setLong(1, id);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
 
+    @Override
     public List<User> getAllUsers() {
-        return null;
+        List<User> users = new ArrayList<>();
+
+        var conn = Database.getInstance().getConnection();
+
+        try (var stmt = conn.createStatement()) {
+            var rs = stmt.executeQuery("select id, name, lastName, age from users order by id");
+
+            while (rs.next()) {
+                var id = rs.getLong("id");
+                var name = rs.getString("name");
+                var secondName = rs.getString("lastName");
+                var age = rs.getByte("age");
+
+                users.add(new User(id, name, secondName, age));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
     }
 
+    @Override
     public void cleanUsersTable() {
 
+        var conn = Database.getInstance().getConnection();
+
+        try (var stmt = conn.createStatement()) {
+
+            stmt.executeUpdate("TRUNCATE table users");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
