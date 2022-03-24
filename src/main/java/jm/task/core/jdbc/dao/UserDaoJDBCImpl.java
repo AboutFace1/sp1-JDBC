@@ -16,12 +16,20 @@ public class UserDaoJDBCImpl implements UserDao {
         var conn = Database.getInstance().getConnection();
 
         try (var stmt = conn.createStatement()) {
+            conn.setAutoCommit(false);
 
             stmt.executeUpdate("create table if not exists users (id int primary key AUTO_INCREMENT," +
                     " name TEXT, lastName TEXT, age TINYINT)");
 
+            conn.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 
@@ -30,11 +38,19 @@ public class UserDaoJDBCImpl implements UserDao {
         var conn = Database.getInstance().getConnection();
 
         try (var stmt = conn.createStatement()) {
+            conn.setAutoCommit(false);
 
             stmt.executeUpdate("drop table if exists users");
 
+            conn.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 
@@ -43,14 +59,23 @@ public class UserDaoJDBCImpl implements UserDao {
         var conn = Database.getInstance().getConnection();
 
         try (var stmt = conn.prepareStatement("insert into users (name, lastName, age) values (?, ?, ?)")) {
+            conn.setAutoCommit(false);
 
             stmt.setString(1, name);
             stmt.setString(2, lastName);
             stmt.setByte(3, age);
 
             stmt.executeUpdate();
+
+            conn.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 
@@ -59,12 +84,21 @@ public class UserDaoJDBCImpl implements UserDao {
         var conn = Database.getInstance().getConnection();
 
         try (var stmt = conn.prepareStatement("delete from users where id=?")) {
+            conn.setAutoCommit(false);
 
             stmt.setLong(1, id);
 
             stmt.executeUpdate();
+
+            conn.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
 
     }
@@ -76,6 +110,8 @@ public class UserDaoJDBCImpl implements UserDao {
         var conn = Database.getInstance().getConnection();
 
         try (var stmt = conn.createStatement()) {
+            conn.setAutoCommit(false);
+
             var rs = stmt.executeQuery("select id, name, lastName, age from users order by id");
 
             while (rs.next()) {
@@ -87,8 +123,15 @@ public class UserDaoJDBCImpl implements UserDao {
                 users.add(new User(id, name, secondName, age));
             }
 
+            conn.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
 
         return users;
@@ -100,11 +143,19 @@ public class UserDaoJDBCImpl implements UserDao {
         var conn = Database.getInstance().getConnection();
 
         try (var stmt = conn.createStatement()) {
+            conn.setAutoCommit(false);
 
             stmt.executeUpdate("TRUNCATE table users");
 
+            conn.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 }
