@@ -84,7 +84,8 @@ public class UserDaoHibernateImpl implements UserDao {
 
             transaction = session.beginTransaction();
 
-            session.createNativeQuery("delete from users where id=?").setParameter(1, id).executeUpdate();
+            User user = session.get(User.class, id);
+            session.delete(user);
 
             transaction.commit();
         } catch (Exception e) {
@@ -104,11 +105,9 @@ public class UserDaoHibernateImpl implements UserDao {
 
             transaction = session.beginTransaction();
 
-            NativeQuery<User> query  = session.createNativeQuery("select * from users", User.class);
-
-            for (User u : query.list()) {
-                users.add(new User(u.getId(), u.getName(), u.getLastName(), u.getAge()));
-            }
+            String HQL = "FROM User";
+            Query query  = session.createQuery(HQL);
+            users.addAll(query.getResultList());
 
             transaction.commit();
         } catch (Exception e) {
@@ -128,7 +127,9 @@ public class UserDaoHibernateImpl implements UserDao {
 
             transaction = session.beginTransaction();
 
-            session.createNativeQuery("TRUNCATE table users").executeUpdate();
+            String HQL = "DELETE from User";
+            Query query = session.createQuery(HQL);
+            query.executeUpdate();
 
             transaction.commit();
         } catch (Exception e) {
